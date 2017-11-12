@@ -110,7 +110,7 @@ game_engine:-
 
 display_board(0):-
     print_board,
-    write('Game over!'), nl, write('It\'s '), nl,
+    write('Game over!'), nl, write('It\'s '),
     sector(1, 1, WS1),
     sector(2, 1, WS2),
     sector(3, 1, WS3),
@@ -275,13 +275,14 @@ input(Player, Position, FinalPosition, Orientation, FinalOrientation, Type, Next
     piece_input(Player, Position, Power, Pass),
     condition((Pass == 1),
     (
+        Type = pass,
         NextTurnPlayer is 0
     ),
     (
         movement_input(Player, Position, Power, FinalPosition, Orientation, Type, Rotate, Back1),
         condition((Back1 == 0),
         (
-            condition((Rotate == 0),
+            condition((Rotate == 0; Type == drop),
             (
                 FinalOrientation is Orientation,
                 NextTurnPlayer is Player
@@ -338,7 +339,7 @@ orientation_input(Orientation, FinalOrientation, Back):-
 /* ===== Input validation ===== */
 
 validate_piece_input(pass, Player, _, Pass):-
-    \+ check_piece(Player),
+    \+ check_play(Player),
     Pass is 1,
     !.
 validate_piece_input(pass, _, _, _):-
@@ -397,17 +398,17 @@ validate_orientation_input(_, _):-
 /* ===== Input evaluation ===== */
 
 evaluate_piece_input(Player, [PositionX, PositionY], Power):-
-    board([PositionX, PositionY], [OForward, Player, _]), %% if either this
+    board([PositionX, PositionY], [OForward, Player, _]),
     check_orientation(OForward, 'l', OLeft),
     check_orientation(OForward, 'r', ORight),
     check_limit(PositionX, PositionY, OLeft, LLeft),
     check_limit(PositionX, PositionY, OForward, LForward),
     check_limit(PositionX, PositionY, ORight, LRight),
-    \+ sort([LLeft, LForward, LRight], [0]), %% or this can't be proven, the selection isn't valid
+    \+ sort([LLeft, LForward, LRight], [0]),
     check_sector(PositionX, PositionY, S),
     sector(S, Player, SPower),
-    Power is max(SPower, 1), %% disallow Power == 0
-    check_piece(PositionX, PositionY, OForward, Player, Power), %% additional check to see if any play is possible
+    Power is max(SPower, 1),
+    check_play(PositionX, PositionY, OForward, Player, Power),
     !.
 evaluate_piece_input(_, _, _):-
     write('Invalid piece!'), nl,
@@ -415,12 +416,12 @@ evaluate_piece_input(_, _, _):-
     fail.
 
 evaluate_movement_input(Player, [Direction, Distance], [PositionX, PositionY], Power, [FinalPositionX, FinalPositionY], Orientation, Type, Rotate):-
-    Distance =< Power, %% if either this
+    Distance =< Power,
     board([PositionX, PositionY], [O, _, _]),
     check_orientation(O, Direction, Orientation),
     check_limit(PositionX, PositionY, Orientation, Limit),
-    Distance =< Limit, %% or this
-    check_movement(PositionX, PositionY, Distance, Orientation, Player, FinalPositionX, FinalPositionY, Type), %% or this can't be proven, the selection isn't valid
+    Distance =< Limit,
+    check_movement(PositionX, PositionY, Distance, Orientation, Player, FinalPositionX, FinalPositionY, Type),
     check_sector(PositionX, PositionY, Sector),
     check_sector(FinalPositionX, FinalPositionY, FinalSector),
     condition((FinalSector \== Sector),
@@ -465,22 +466,26 @@ update_board(_, FinalPosition, FinalPosition, _).
 update_board(Player, [PositionX, PositionY], [FinalPositionX, FinalPositionY], Orientation):-
     retract(board([PositionX, PositionY], [_, _, M])),
     assertz(board([PositionX, PositionY], [0, 0, Player])),
-    check_sector(PositionX, PositionY, S),
-    sector(S, Player, Power),
-    NewPower is Power + 1,
-    retract(sector(S, Player, Power)),
-    assertz(sector(S, Player, NewPower)),
-    condition((M \== 0, M \== Player),
+    condition((M \== Player),
     (
-        check_sector(PositionX, PositionY, OS),
-        sector(OS, M, OtherPower),
-        NewOtherPower is OtherPower - 1,
-        retract(sector(OS, M, OtherPower)),
-        assertz(sector(OS, M, NewOtherPower))
+        check_sector(PositionX, PositionY, S),
+        sector(S, Player, Power),
+        NewPower is Power + 1,
+        retract(sector(S, Player, Power)),
+        assertz(sector(S, Player, NewPower)),
+        condition((M \== 0),
+        (
+            check_sector(PositionX, PositionY, OS),
+            sector(OS, M, OtherPower),
+            NewOtherPower is OtherPower - 1,
+            retract(sector(OS, M, OtherPower)),
+            assertz(sector(OS, M, NewOtherPower))
+        ))
     )),
     update_coords(PositionX, PositionY, PositionXNext, PositionYNext, Orientation),
     update_board(Player, [PositionXNext, PositionYNext], [FinalPositionX, FinalPositionY], Orientation).
-    
+
+update_board(_, _, _, _, _, pass).
 update_board(Player, Position, FinalPosition, Orientation, FinalOrientation, rush):-
     update_board(Player, Position, FinalPosition, Orientation),
     retract(board(FinalPosition, [_, _, _])),
@@ -506,14 +511,14 @@ update_board(Player, Position, FinalPosition, _, FinalOrientation, Type):-
 /* ===== Checks ===== */
 /* ================== */
 
-check_piece(P):-
-    board([X, Y], [O, P, _]), %% must test all of these
+check_play(P):-
+    board([X, Y], [O, P, _]), %% tests all that match
     check_sector(X, Y, S),
     sector(S, P, SPower),
     Power is max(SPower, 1),
-    check_piece(X, Y, O, P, Power).
+    check_play(X, Y, O, P, Power).
 
-check_piece(X, Y, O1, P, Power):-
+check_play(X, Y, O1, P, Power):-
     check_orientation(O1, 'l', O2),
     check_orientation(O1, 'r', O3),
     check_limit(X, Y, O1, L1),
@@ -522,26 +527,26 @@ check_piece(X, Y, O1, P, Power):-
     Limit1 is min(Power, L1),
     Limit2 is min(Power, L2),
     Limit3 is min(Power, L3),
-    condition((Limit1 == 0; \+ check_piece(X, Y, 0, O1, P, Limit1)),
+    condition((Limit1 == 0; \+ check_play(X, Y, 0, O1, P, Limit1)),
     (
-        condition((Limit2 == 0; \+ check_piece(X, Y, 0, O2, P, Limit2)),
+        condition((Limit2 == 0; \+ check_play(X, Y, 0, O2, P, Limit2)),
         (
-            condition((Limit3 == 0; \+ check_piece(X, Y, 0, O3, P, Limit3)),
+            condition((Limit3 == 0; \+ check_play(X, Y, 0, O3, P, Limit3)),
             (
                 !,
                 fail
             ))
         ))
     )).
-check_piece(X, Y, L, O, P, L):-
+check_play(X, Y, L, O, P, L):-
     !,
     check_movement(X, Y, L, O, P, _, _, _).
-check_piece(X, Y, D, O, P, L):-
+check_play(X, Y, D, O, P, L):-
     \+ check_movement(X, Y, D, O, P, _, _, _),
     DNext is D + 1,
     !,
-    check_piece(X, Y, DNext, O, P, L).
-check_piece(_, _, _, _, _, _).
+    check_play(X, Y, DNext, O, P, L).
+check_play(_, _, _, _, _, _).
 
 check_sector(X, Y, S):-
     S is div(X + 2, 3) + div(Y - 1, 3) * 3.
@@ -552,7 +557,7 @@ check_orientation(O, 'f', O).
 check_orientation(O, 'r', NewO):-
     NewO is mod(O, 8) + 1.
 
-check_limit(_, Y, 1, L):- %% check if cuts aren't needed
+check_limit(_, Y, 1, L):-
     L is Y - 1.
 check_limit(X, Y, 2, L):-
     L is min(9 - X, Y - 1).
@@ -628,45 +633,45 @@ check_movement(X, Y, D, 8, P, FX, FY, T):-
 
 check_movement(_, _, 0, _, _, T, T).
 check_movement(X, Y, D, 1, P, OldT, T):-
-    check_field(X, Y, OldT, NewT),
+    check_field(X, Y, P, OldT, NewT),
     YNext is Y - 1,
     DNext is D - 1,
     check_movement(X, YNext, DNext, 1, P, NewT, T).
 check_movement(X, Y, D, 2, P, OldT, T):-
-    check_field(X, Y, OldT, NewT),
+    check_field(X, Y, P, OldT, NewT),
     XNext is X + 1,
     YNext is Y - 1,
     DNext is D - 1,
     check_movement(XNext, YNext, DNext, 2, P, NewT, T).
 check_movement(X, Y, D, 3, P, OldT, T):-
-    check_field(X, Y, OldT, NewT),
+    check_field(X, Y, P, OldT, NewT),
     XNext is X + 1,
     DNext is D - 1,
     check_movement(XNext, Y, DNext, 3, P, NewT, T).
 check_movement(X, Y, D, 4, P, OldT, T):-
-    check_field(X, Y, OldT, NewT),
+    check_field(X, Y, P, OldT, NewT),
     XNext is X + 1,
     YNext is Y + 1,
     DNext is D - 1,
     check_movement(XNext, YNext, DNext, 4, P, NewT, T).
 check_movement(X, Y, D, 5, P, OldT, T):-
-    check_field(X, Y, OldT, NewT),
+    check_field(X, Y, P, OldT, NewT),
     YNext is Y + 1,
     DNext is D - 1,
     check_movement(X, YNext, DNext, 5, P, NewT, T).
 check_movement(X, Y, D, 6, P, OldT, T):-
-    check_field(X, Y, OldT, NewT),
+    check_field(X, Y, P, OldT, NewT),
     XNext is X - 1,
     YNext is Y + 1,
     DNext is D - 1,
     check_movement(XNext, YNext, DNext, 6, P, NewT, T).
 check_movement(X, Y, D, 7, P, OldT, T):-
-    check_field(X, Y, OldT, NewT),
+    check_field(X, Y, P, OldT, NewT),
     XNext is X - 1,
     DNext is D - 1,
     check_movement(XNext, Y, DNext, 7, P, NewT, T).
 check_movement(X, Y, D, 8, P, OldT, T):-
-    check_field(X, Y, OldT, NewT),
+    check_field(X, Y, P, OldT, NewT),
     XNext is X - 1,
     YNext is Y - 1,
     DNext is D - 1,
@@ -685,13 +690,13 @@ check_final_field(X, Y, Player, T):-
     (
         fail
     ))).
-check_field(X, Y, OldT, NewT):-
+check_field(X, Y, Player, OldT, NewT):-
     board([X, Y], [_, P, M]),
     condition(((OldT == rush; OldT == drop), P \== 0),
     (
         NewT = jump
     ),
-    condition((OldT == rush, M \== P, M \== 0),
+    condition((OldT == rush, M \== Player, M \== 0),
     (
         NewT = drop
     ),

@@ -5,9 +5,6 @@
 /* ===== Utilities ===== */
 /* ===================== */
 
-safecall(Call, FailCall):-
-    catch((Call; FailCall), _, (FailCall, nl, write('Exception!'), nl)).
-
 saferead(Read):-
     catch(read(Read), _Throw, (write('Invalid input!'), nl, !, fail)).
 
@@ -72,10 +69,18 @@ start_game:-
                     [[1, 8], [0, 0, 0]], [[2, 8], [0, 0, 0]], [[3, 8], [0, 0, 0]], [[4, 8], [0, 0, 0]], [[5, 8], [0, 0, 0]], [[6, 8], [0, 0, 0]], [[7, 8], [0, 0, 0]], [[8, 8], [0, 0, 0]], [[9, 8], [0, 0, 0]],
                     [[1, 9], [0, 0, 0]], [[2, 9], [0, 0, 0]], [[3, 9], [1, 1, 0]], [[4, 9], [0, 0, 0]], [[5, 9], [0, 0, 0]], [[6, 9], [0, 0, 0]], [[7, 9], [1, 2, 0]], [[8, 9], [0, 0, 0]], [[9, 9], [8, 1, 0]]]),
     assertz_sector([[1, 1, 0], [2, 1, 0], [3, 1, 0], [4, 1, 0], [5, 1, 0], [6, 1, 0], [7, 1, 0], [8, 1, 0], [9, 1, 0], [1, 2, 0], [2, 2, 0], [3, 2, 0], [4, 2, 0], [5, 2, 0], [6, 2, 0], [7, 2, 0], [8, 2, 0], [9, 2, 0]]),
-    condition((\+ debug(on)), safecall(game_engine, clear_game)).
+    condition((\+ debug(on)),
+    (
+        game_engine,
+        clear_game
+    )).
 
 continue_game:-
-    safecall(game_engine, clear_game).
+    condition((\+ debug(on)),
+    (
+        game_engine,
+        clear_game
+    )).
 
 clear_game:-
     retractall(player(_)),
@@ -512,7 +517,7 @@ update_board(Player, Position, FinalPosition, _, FinalOrientation, Type):-
 /* ================== */
 
 check_play(P):-
-    board([X, Y], [O, P, _]), %% tests all that match
+    board([X, Y], [O, P, _]),
     check_sector(X, Y, S),
     sector(S, P, SPower),
     Power is max(SPower, 1),
@@ -576,56 +581,56 @@ check_limit(X, Y, 8, L):-
 
 check_movement(X, Y, D, 1, P, X, FY, T):-
     FY is Y - D,
-    check_final_field(X, FY, P, OldT),
+    check_field(X, FY, P, OldT),
     YNext is Y - 1,
     DNext is D - 1,
     check_movement(X, YNext, DNext, 1, P, OldT, T).
 check_movement(X, Y, D, 2, P, FX, FY, T):-
     FX is X + D,
     FY is Y - D,
-    check_final_field(FX, FY, P, OldT),
+    check_field(FX, FY, P, OldT),
     XNext is X + 1,
     YNext is Y - 1,
     DNext is D - 1,
     check_movement(XNext, YNext, DNext, 2, P, OldT, T).
 check_movement(X, Y, D, 3, P, FX, Y, T):-
     FX is X + D,
-    check_final_field(FX, Y, P, OldT),
+    check_field(FX, Y, P, OldT),
     XNext is X + 1,
     DNext is D - 1,
     check_movement(XNext, Y, DNext, 3, P, OldT, T).
 check_movement(X, Y, D, 4, P, FX, FY, T):-
     FX is X + D,
     FY is Y + D,
-    check_final_field(FX, FY, P, OldT),
+    check_field(FX, FY, P, OldT),
     XNext is X + 1,
     YNext is Y + 1,
     DNext is D - 1,
     check_movement(XNext, YNext, DNext, 4, P, OldT, T).
 check_movement(X, Y, D, 5, P, X, FY, T):-
     FY is Y + D,
-    check_final_field(X, FY, P, OldT),
+    check_field(X, FY, P, OldT),
     YNext is Y + 1,
     DNext is D - 1,
     check_movement(X, YNext, DNext, 5, P, OldT, T).
 check_movement(X, Y, D, 6, P, FX, FY, T):-
     FX is X - D,
     FY is Y + D,
-    check_final_field(FX, FY, P, OldT),
+    check_field(FX, FY, P, OldT),
     XNext is X - 1,
     YNext is Y + 1,
     DNext is D - 1,
     check_movement(XNext, YNext, DNext, 6, P, OldT, T).
 check_movement(X, Y, D, 7, P, FX, Y, T):-
     FX is X - D,
-    check_final_field(FX, Y, P, OldT),
+    check_field(FX, Y, P, OldT),
     XNext is X - 1,
     DNext is D - 1,
     check_movement(XNext, Y, DNext, 7, P, OldT, T).
 check_movement(X, Y, D, 8, P, FX, FY, T):-
     FX is X - D,
     FY is Y - D,
-    check_final_field(FX, FY, P, OldT),
+    check_field(FX, FY, P, OldT),
     XNext is X - 1,
     YNext is Y - 1,
     DNext is D - 1,
@@ -677,7 +682,7 @@ check_movement(X, Y, D, 8, P, OldT, T):-
     DNext is D - 1,
     check_movement(XNext, YNext, DNext, 8, P, NewT, T).
 
-check_final_field(X, Y, Player, T):-
+check_field(X, Y, Player, T):-
     board([X, Y], [_, 0, M]),
     condition((M == Player),
     (

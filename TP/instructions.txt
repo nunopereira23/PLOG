@@ -1,0 +1,23 @@
+Start game with:
+	start_game.
+
+Select piece with:
+	XY.
+Where X is a letter from 'a' to 'i'
+and Y is a number from '1' to '9'.
+Example:
+a5.
+
+Define movement with:
+	OD.
+Where O is either the 'l' (left, or counter-clockwise), 'f' (forward), or 'r' (right, or clockwise) letter
+and D is a number from '1' to '8', limited by your 'movement power' (see rules)
+and position in the board.
+Example:
+f1.
+
+Define orientation (when a change of sector occurs) with:
+	O.
+Where O, like previously, is either the 'l', 'f', or 'r' letter.
+Example:
+r.

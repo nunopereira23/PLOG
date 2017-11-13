@@ -56,10 +56,29 @@ condition(Cond, True, False):-
     board/2,
     sector/3.
 
+test_game:-
+    clear_game,
+    assertz(player([1, 2])),
+    assertz_board([ [[1, 1], [0, 0, 0]], [[2, 1], [0, 0, 1]], [[3, 1], [0, 0, 1]], [[4, 1], [0, 0, 1]], [[5, 1], [7, 2, 2]], [[6, 1], [0, 0, 2]], [[7, 1], [0, 0, 2]], [[8, 1], [0, 0, 2]], [[9, 1], [0, 0, 0]],
+                    [[1, 2], [0, 0, 1]], [[2, 2], [0, 0, 1]], [[3, 2], [0, 0, 1]], [[4, 2], [0, 0, 2]], [[5, 2], [0, 0, 1]], [[6, 2], [0, 0, 1]], [[7, 2], [0, 0, 1]], [[8, 2], [0, 0, 1]], [[9, 2], [0, 0, 2]],
+                    [[1, 3], [0, 0, 1]], [[2, 3], [0, 0, 2]], [[3, 3], [0, 0, 2]], [[4, 3], [0, 0, 1]], [[5, 3], [0, 0, 0]], [[6, 3], [0, 0, 1]], [[7, 3], [0, 0, 1]], [[8, 3], [0, 0, 1]], [[9, 3], [0, 0, 2]],
+                    [[1, 4], [0, 0, 1]], [[2, 4], [0, 0, 2]], [[3, 4], [1, 1, 1]], [[4, 4], [0, 0, 2]], [[5, 4], [0, 0, 0]], [[6, 4], [0, 0, 1]], [[7, 4], [0, 0, 1]], [[8, 4], [0, 0, 1]], [[9, 4], [0, 0, 2]],
+                    [[1, 5], [0, 0, 1]], [[2, 5], [0, 0, 1]], [[3, 5], [0, 0, 1]], [[4, 5], [0, 0, 2]], [[5, 5], [0, 0, 2]], [[6, 5], [0, 0, 1]], [[7, 5], [0, 0, 1]], [[8, 5], [0, 0, 2]], [[9, 5], [0, 0, 2]],
+                    [[1, 6], [0, 0, 1]], [[2, 6], [0, 0, 2]], [[3, 6], [0, 0, 1]], [[4, 6], [0, 0, 1]], [[5, 6], [0, 0, 1]], [[6, 6], [0, 0, 0]], [[7, 6], [0, 0, 1]], [[8, 6], [0, 0, 1]], [[9, 6], [0, 0, 2]],
+                    [[1, 7], [0, 0, 1]], [[2, 7], [0, 0, 1]], [[3, 7], [0, 0, 2]], [[4, 7], [0, 0, 2]], [[5, 7], [0, 0, 2]], [[6, 7], [0, 0, 1]], [[7, 7], [0, 0, 1]], [[8, 7], [0, 0, 0]], [[9, 7], [0, 0, 2]],
+                    [[1, 8], [0, 0, 1]], [[2, 8], [0, 0, 1]], [[3, 8], [0, 0, 0]], [[4, 8], [0, 0, 1]], [[5, 8], [3, 2, 2]], [[6, 8], [0, 0, 2]], [[7, 8], [0, 0, 2]], [[8, 8], [0, 0, 2]], [[9, 8], [0, 0, 1]],
+                    [[1, 9], [0, 0, 1]], [[2, 9], [0, 0, 0]], [[3, 9], [0, 0, 1]], [[4, 9], [0, 0, 2]], [[5, 9], [0, 0, 2]], [[6, 9], [0, 0, 2]], [[7, 9], [2, 1, 1]], [[8, 9], [0, 0, 1]], [[9, 9], [0, 0, 1]]]),
+    assertz_sector([[1, 1, 6], [2, 1, 5], [3, 1, 4], [4, 1, 7], [5, 1, 4], [6, 1, 5], [7, 1, 6], [8, 1, 2], [9, 1, 5], [1, 2, 2], [2, 2, 3], [3, 2, 4], [4, 2, 2], [5, 2, 3], [6, 2, 4], [7, 2, 1], [8, 2, 7], [9, 2, 3]]),
+    condition((\+ debug(on)),
+    (
+        game_engine,
+        clear_game
+    )).
+
 start_game:-
     clear_game,
     assertz(player([1, 2])),
-    assertz_board([[[1, 1], [4, 2, 0]], [[2, 1], [0, 0, 0]], [[3, 1], [5, 1, 0]], [[4, 1], [0, 0, 0]], [[5, 1], [0, 0, 0]], [[6, 1], [0, 0, 0]], [[7, 1], [5, 2, 0]], [[8, 1], [0, 0, 0]], [[9, 1], [0, 0, 0]],
+    assertz_board([ [[1, 1], [4, 2, 0]], [[2, 1], [0, 0, 0]], [[3, 1], [5, 1, 0]], [[4, 1], [0, 0, 0]], [[5, 1], [0, 0, 0]], [[6, 1], [0, 0, 0]], [[7, 1], [5, 2, 0]], [[8, 1], [0, 0, 0]], [[9, 1], [0, 0, 0]],
                     [[1, 2], [0, 0, 0]], [[2, 2], [0, 0, 0]], [[3, 2], [0, 0, 0]], [[4, 2], [0, 0, 0]], [[5, 2], [0, 0, 0]], [[6, 2], [0, 0, 0]], [[7, 2], [0, 0, 0]], [[8, 2], [0, 0, 0]], [[9, 2], [0, 0, 0]],
                     [[1, 3], [0, 0, 0]], [[2, 3], [0, 0, 0]], [[3, 3], [0, 0, 0]], [[4, 3], [0, 0, 0]], [[5, 3], [0, 0, 0]], [[6, 3], [0, 0, 0]], [[7, 3], [0, 0, 0]], [[8, 3], [0, 0, 0]], [[9, 3], [0, 0, 0]],
                     [[1, 4], [0, 0, 0]], [[2, 4], [0, 0, 0]], [[3, 4], [0, 0, 0]], [[4, 4], [0, 0, 0]], [[5, 4], [0, 0, 0]], [[6, 4], [0, 0, 0]], [[7, 4], [0, 0, 0]], [[8, 4], [0, 0, 0]], [[9, 4], [0, 0, 0]],
@@ -292,6 +311,7 @@ input(Player, Position, FinalPosition, Orientation, FinalOrientation, Type, Next
                 FinalOrientation is Orientation,
                 NextTurnPlayer is Player
             ),
+            condition((Rotate == 1),
             (
                 orientation_input(Orientation, FinalOrientation, Back2),
                 condition((Back2 == 0),
@@ -301,7 +321,7 @@ input(Player, Position, FinalPosition, Orientation, FinalOrientation, Type, Next
                 (
                     fail
                 ))
-            ))
+            )))
         ),
         (
             fail
@@ -403,17 +423,11 @@ validate_orientation_input(_, _):-
 /* ===== Input evaluation ===== */
 
 evaluate_piece_input(Player, [PositionX, PositionY], Power):-
-    board([PositionX, PositionY], [OForward, Player, _]),
-    check_orientation(OForward, 'l', OLeft),
-    check_orientation(OForward, 'r', ORight),
-    check_limit(PositionX, PositionY, OLeft, LLeft),
-    check_limit(PositionX, PositionY, OForward, LForward),
-    check_limit(PositionX, PositionY, ORight, LRight),
-    \+ sort([LLeft, LForward, LRight], [0]),
+    board([PositionX, PositionY], [Orientation, Player, _]),
     check_sector(PositionX, PositionY, S),
     sector(S, Player, SPower),
     Power is max(SPower, 1),
-    check_play(PositionX, PositionY, OForward, Player, Power),
+    check_play(PositionX, PositionY, Orientation, Player, Power),
     !.
 evaluate_piece_input(_, _, _):-
     write('Invalid piece!'), nl,
@@ -517,7 +531,7 @@ update_board(Player, Position, FinalPosition, _, FinalOrientation, Type):-
 /* ================== */
 
 check_play(P):-
-    board([X, Y], [O, P, _]),
+    board([X, Y], [O, P, _]), %%
     check_sector(X, Y, S),
     sector(S, P, SPower),
     Power is max(SPower, 1),
@@ -532,11 +546,11 @@ check_play(X, Y, O1, P, Power):-
     Limit1 is min(Power, L1),
     Limit2 is min(Power, L2),
     Limit3 is min(Power, L3),
-    condition((Limit1 == 0; \+ check_play(X, Y, 0, O1, P, Limit1)),
+    condition((Limit1 == 0; \+ check_play(X, Y, 1, O1, P, Limit1)),
     (
-        condition((Limit2 == 0; \+ check_play(X, Y, 0, O2, P, Limit2)),
+        condition((Limit2 == 0; \+ check_play(X, Y, 1, O2, P, Limit2)),
         (
-            condition((Limit3 == 0; \+ check_play(X, Y, 0, O3, P, Limit3)),
+            condition((Limit3 == 0; \+ check_play(X, Y, 1, O3, P, Limit3)),
             (
                 !,
                 fail

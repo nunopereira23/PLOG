@@ -242,6 +242,9 @@ cell(V1, V2, V3):-
     X0v1 =:= X1, Y1v0 =:= Y0),
     !.
 
+:-dynamic
+  sum/4.
+
 get_sums([sum(_, _, _, Sum)], Sum):-
     !.
 get_sums([sum(_, _, _, Sum)|_], Sum).

@@ -1,39 +1,46 @@
 :-use_module(library(lists)).
 :-use_module(library(clpfd)).
 
-%% Main
-
 /*
+Example usage:
 trid(5, [sum(2, 4, 5, 12), sum(4, 7, 8, 9), sum(6, 9, 10, 6), sum(7, 11, 12, 6), sum(8, 12, 13, 12), sum(9, 13, 14, 8)]).
-                      __
-                     /  \
-                    | 05 |
-                     \__/
-                     /  \
-                    /    \
-                 __/      \__
-                /  \      /  \
-               | 04 |----| 01 |
-                \__/      \__/
-                /  \      /  \
-               /    \    /    \
-            __/  12  \__/      \__
-           /  \      /  \      /  \
-          | 03 |----| 05 |----| 02 |
-           \__/      \__/      \__/
-           /  \      /  \      /  \
-          /    \    /    \    /    \
-       __/  09  \__/      \__/  06  \__
-      /  \      /  \      /  \      /  \
-     | 02 |----| 04 |----| 01 |----| 03 |
-      \__/      \__/      \__/      \__/
-      /  \      /  \      /  \      /  \
-     /    \    /    \    /    \    /    \
-  __/  06  \__/  12  \__/  08  \__/      \__
- /  \      /  \      /  \      /  \      /  \
-| 01 |----| 03 |----| 05 |----| 02 |----| 04 |
- \__/      \__/      \__/      \__/      \__/
+
+                              ____
+                             /    \
+                            /  05  \
+                            \      /
+                             \____/
+                             /    \
+                            /      \
+                       ____/        \____
+                      /    \        /    \
+                     /  04  \______/  01  \
+                     \      /      \      /
+                      \____/        \____/
+                      /    \        /    \
+                     /      \      /      \
+                ____/   12   \____/        \____
+               /    \        /    \        /    \
+              /  03  \______/  05  \______/  02  \
+              \      /      \      /      \      /
+               \____/        \____/        \____/
+               /    \        /    \        /    \
+              /      \      /      \      /      \
+         ____/   09   \____/        \____/   06   \____
+        /    \        /    \        /    \        /    \
+       /  02  \______/  04  \______/  01  \______/  03  \
+       \      /      \      /      \      /      \      /
+        \____/        \____/        \____/        \____/
+        /    \        /    \        /    \        /    \
+       /      \      /      \      /      \      /      \
+  ____/   06   \____/   12   \____/   08   \____/        \____
+ /    \        /    \        /    \        /    \        /    \
+/  01  \______/  03  \______/  05  \______/  02  \______/  04  \
+\      /      \      /      \      /      \      /      \      /
+ \____/        \____/        \____/        \____/        \____/
 */
+
+%% Main
 
 trid(Layer, Sums):-
     trid_check(Layer, Sums),
@@ -45,15 +52,15 @@ trid(_Layer, _Sums):-
     fail.
 
 trid_check(Layer, Sums):-
-    Layer >= 5, %% Layer == 1 is trivial, Layer == 2 is impossible, Layer == 3 is Sums-trivial, and Layer == 4 is impossible as well
-    Layer =< 99, %% My screen holds up to 18, my CPU... not so many
+    Layer >= 5, %% Layer == 1 is trivial, Layer == 2 is impossible, Layer == 3 is sums-trivial, and Layer == 4 is impossible as well
+    Layer =< 34,
     (length(Sums, 0);
     setof(Sum, get_sums(Sums, Sum), [MinSum|SumsRest]),
     MinSum >= 6,
     length(SumsRest, MaxSumIndex),
     nth1(MaxSumIndex, SumsRest, MaxSum),
     MaxSum =< Layer + (Layer - 1) + (Layer - 2)),
-    set_sums(Sums),
+    set_sums(Layer, Sums),
     !.
 
 trid_logic(Layer, Sums, Numbers):-
@@ -64,7 +71,7 @@ trid_logic(Layer, Sums, Numbers):-
     distinct_vertical(Layer, Numbers),
     distinct_diagonal(Layer, Numbers),
     constraint_sums(Sums, Numbers),
-    labeling([], Numbers),
+    labeling([ffc], Numbers),
     !.
 
 trid_display(Layer, Numbers):-
@@ -114,101 +121,109 @@ constraint_sums([sum(V1, V2, V3, S)|Sums], Numbers):-
 
 display_grid(Layer, [Number|Numbers]):-
     Y is 1,
-    N0 is (Layer - Y) * 5,
+    N0 is (Layer - Y) * 7,
     N1 is N0 + 1,
     N2 is N0 + 2,
     number_chars(Number, [NumberChar1|NumberChar2]),
     (length([NumberChar1|NumberChar2], 2),
     atom_chars(N, [NumberChar1|NumberChar2]);
     atom_chars(N, ['0', NumberChar1])),
-    writeN(' ', N2), write('__'), nl,
-    writeN(' ', N1), write('/  \\'), nl,
-    writeN(' ', N0), write('| '), write(N), write(' |'), nl,
-    writeN(' ', N1), write('\\__/'), nl,
-    writeN(' ', N1), write('/  \\'), nl,
-    writeN(' ', N0), write('/    \\'), nl,
+    writeN(' ', N2), write('____'), nl,
+    writeN(' ', N1), write('/    \\'), nl,
+    writeN(' ', N0), write('/  '), write(N), write('  \\'), nl,
+    writeN(' ', N0), write('\\      /'), nl,
+    writeN(' ', N1), write('\\____/'), nl,
+    writeN(' ', N1), write('/    \\'), nl,
+    writeN(' ', N0), write('/      \\'), nl,
     YNext is Y + 1,
-    N0Next is N0 - 5,
-    N1Next is N1 - 5,
-    N2Next is N2 - 5,
+    N0Next is N0 - 7,
+    N1Next is N1 - 7,
+    N2Next is N2 - 7,
     display_grid(Layer, YNext, N0Next, N1Next, N2Next, Numbers).
 display_grid(Layer, Y, N0, N1, N2, [Number|Numbers]):-
     number_chars(Number, [NumberChar1|NumberChar2]),
     (length([NumberChar1|NumberChar2], 2),
     atom_chars(N, [NumberChar1|NumberChar2]);
     atom_chars(N, ['0', NumberChar1])),
-    writeN(' ', N2), write('__'), display_layer_1(1, Y), nl,
-    writeN(' ', N1), write('/  \\'), display_layer_2(1, Y), nl,
-    writeN(' ', N0), write('| '), write(N), write(' |'), display_layer_3(1, Y, Numbers, NumbersNext), nl,
-    writeN(' ', N1), write('\\__/'), display_layer_4(1, Y), nl,
+    writeN(' ', N2), write('____'), display_layer_1(1, Y), nl,
+    writeN(' ', N1), write('/    \\'), display_layer_2(1, Y), nl,
+    writeN(' ', N0), write('/  '), write(N), write('  \\'), display_layer_3(1, Y, Numbers, NumbersNext), nl,
+    writeN(' ', N0), write('\\      /'), display_layer_4(1, Y), nl,
+    writeN(' ', N1), write('\\____/'), display_layer_5(1, Y), nl,
     (Y == Layer;
-    writeN(' ', N1), write('/  \\'), display_layer_5(1, Y), nl,
-    writeN(' ', N0), write('/    \\'), display_layer_6(1, Y), nl,
+    writeN(' ', N1), write('/    \\'), display_layer_6(1, Y), nl,
+    writeN(' ', N0), write('/      \\'), display_layer_7(1, Y), nl,
     YNext is Y + 1,
-    N0Next is N0 - 5,
-    N1Next is N1 - 5,
-    N2Next is N2 - 5,
+    N0Next is N0 - 7,
+    N1Next is N1 - 7,
+    N2Next is N2 - 7,
     display_grid(Layer, YNext, N0Next, N1Next, N2Next, NumbersNext)).
 
-display_layer_1(_Y, _Y).
+display_layer_1(Y, Y).
 display_layer_1(X, Y):-
     XNext is X + 1,
     YPrev is Y - 1,
-    vertex(V1, [X, YPrev]),
-    vertex(V2, [X, Y]),
-    vertex(V3, [XNext, Y]),
+    vertexcoord(V1, [X, YPrev]),
+    vertexcoord(V2, [X, Y]),
+    vertexcoord(V3, [XNext, Y]),
     (sum(V1, V2, V3, Sum),
     number_chars(Sum, [SumChar1|SumChar2]),
     (length([SumChar1|SumChar2], 2),
     atom_chars(S, [SumChar1|SumChar2]);
     atom_chars(S, ['0', SumChar1]));
     S = '  '),
-    write('/  '), write(S), write('  \\__'),
+    write('/   '), write(S), write('   \\____'),
     display_layer_1(XNext, Y).
 
-display_layer_2(_Y, _Y).
+display_layer_2(Y, Y).
 display_layer_2(X, Y):-
-    write('      /  \\'),
+    write('        /    \\'),
     XNext is X + 1,
     display_layer_2(XNext, Y).
 
-display_layer_3(_Y, _Y, Numbers, Numbers).
+display_layer_3(Y, Y, Numbers, Numbers).
 display_layer_3(X, Y, [Number|Numbers], NumbersNext):-
     number_chars(Number, [NumberChar1|NumberChar2]),
     (length([NumberChar1|NumberChar2], 2),
     atom_chars(N, [NumberChar1|NumberChar2]);
     atom_chars(N, ['0', NumberChar1])),
-    write('----| '), write(N), write(' |'),
+    write('______/  '), write(N), write('  \\'),
     XNext is X + 1,
     display_layer_3(XNext, Y, Numbers, NumbersNext).
 
-display_layer_4(_Y, _Y).
+display_layer_4(Y, Y).
 display_layer_4(X, Y):-
-    write('      \\__/'),
+    write('      \\      /'),
     XNext is X + 1,
     display_layer_4(XNext, Y).
 
-display_layer_5(_Y, _Y).
+display_layer_5(Y, Y).
 display_layer_5(X, Y):-
+    write('        \\____/'),
+    XNext is X + 1,
+    display_layer_5(XNext, Y).
+
+display_layer_6(Y, Y).
+display_layer_6(X, Y):-
     XNext is X + 1,
     YNext is Y + 1,
-    vertex(V1, [X, Y]),
-    vertex(V2, [XNext, Y]),
-    vertex(V3, [XNext, YNext]),
+    vertexcoord(V1, [X, Y]),
+    vertexcoord(V2, [XNext, Y]),
+    vertexcoord(V3, [XNext, YNext]),
     (sum(V1, V2, V3, Sum),
     number_chars(Sum, [SumChar1|SumChar2]),
     (length([SumChar1|SumChar2], 2),
     atom_chars(S, [SumChar1|SumChar2]);
     atom_chars(S, ['0', SumChar1]));
     S = '  '),
-    write('  '), write(S), write('  /  \\'),
-    display_layer_5(XNext, Y).
-
-display_layer_6(_Y, _Y).
-display_layer_6(X, Y):-
-    write('    /    \\'),
-    XNext is X + 1,
+    write('   '), write(S), write('   /    \\'),
     display_layer_6(XNext, Y).
+
+display_layer_7(Y, Y).
+display_layer_7(X, Y):-
+    write('      /      \\'),
+    XNext is X + 1,
+    display_layer_7(XNext, Y).
 
 %% Utilities
 
@@ -219,23 +234,23 @@ writeN(C, N):-
     write(C),
     writeN(C, Next).
 
-vertex(V, C):-
-    vertex(V, 1, [1, 1], C),
+vertexcoord(V, C):-
+    vertexcoord(V, 1, [1, 1], C),
     !.
-vertex(V, V, C, C).
-vertex(V, I, [X, Y], C):-
+vertexcoord(V, V, C, C).
+vertexcoord(V, I, [X, Y], C):-
     INext is I + 1,
     (X =\= Y,
     XNext is X + 1,
     YNext is Y;
     XNext is 1,
     YNext is Y + 1),
-    vertex(V, INext, [XNext, YNext], C).
+    vertexcoord(V, INext, [XNext, YNext], C).
 
 cell(V1, V2, V3):-
-    vertex(V1, [X0, Y0]),
-    vertex(V2, [X0v1, Y1v0]),
-    vertex(V3, [X1, Y1]),
+    vertexcoord(V1, [X0, Y0]),
+    vertexcoord(V2, [X0v1, Y1v0]),
+    vertexcoord(V3, [X1, Y1]),
     X1 =:= X0 + 1,
     Y1 =:= Y0 + 1,
     (X0v1 =:= X0, Y1v0 =:= Y1;
@@ -243,7 +258,7 @@ cell(V1, V2, V3):-
     !.
 
 :-dynamic
-  sum/4.
+    sum/4.
 
 get_sums([sum(_, _, _, Sum)], Sum):-
     !.
@@ -251,12 +266,14 @@ get_sums([sum(_, _, _, Sum)|_], Sum).
 get_sums([_|Sumslist], Sum):-
     get_sums(Sumslist, Sum).
 
-set_sums([]).
-set_sums([sum(V1, V2, V3, S)|Sums]):-
+set_sums(_, []).
+set_sums(Layer, [sum(V1, V2, V3, S)|Sums]):-
+    V1 >= 1,
+    V3 =< div(Layer * (Layer + 1), 2),
     cell(V1, V2, V3),
     assertz(sum(V1, V2, V3, S)),
     !,
-    set_sums(Sums).
+    set_sums(Layer, Sums).
 
 clear_sums:-
     retractall(sum(_, _, _, _)).
@@ -283,40 +300,14 @@ diagonal_numbers(Numbers, N, Diagonal, NumbersNext):-
     diagonal_numbers(Numbers, N, 1, Diagonal, NumbersNext).
 diagonal_numbers(Numbers, N, N, Diagonal, NumbersNext):-
     horizontal_numbers(Numbers, N, HorizontalNumbers, _),
-    reverse(HorizontalNumbers, [DiagonalNumber|_NumbersNext]),
-    reverse(_NumbersNext, NumbersNext),
+    reverse(HorizontalNumbers, [DiagonalNumber|NumbersNextReverse]),
+    reverse(NumbersNextReverse, NumbersNext),
     Diagonal = [DiagonalNumber].
 diagonal_numbers(Numbers, N, I, Diagonal, NumbersNext):-
     INext is I + 1,
     horizontal_numbers(Numbers, I, HorizontalNumbers, NextNumbers),
-    reverse(HorizontalNumbers, [DiagonalNumber|_HorizontalNumbersNext]),
-    reverse(_HorizontalNumbersNext, HorizontalNumbersNext),
+    reverse(HorizontalNumbers, [DiagonalNumber|HorizontalNumbersNextReverse]),
+    reverse(HorizontalNumbersNextReverse, HorizontalNumbersNext),
     diagonal_numbers(NextNumbers, N, INext, DiagonalNext, DiagonalNumbersNext),
     Diagonal = [DiagonalNumber|DiagonalNext],
     append(HorizontalNumbersNext, DiagonalNumbersNext, NumbersNext).
-
-/*
-    horizontal_numbers([a,b,c,d,e,f,g,h,i,j,k,l,m,n,o], 1, H1, _N1), horizontal_numbers(_N1, 2, H2, _N2), horizontal_numbers(_N2, 3, H3, _N3), horizontal_numbers(_N3, 4, H4, _N4), horizontal_numbers(_N4, 5, H5, N).
-    H1 = [a],
-    H2 = [b,c],
-    H3 = [d,e,f],
-    H4 = [g,h,i,j],
-    H5 = [k,l,m,n,o],
-    N = []
-
-    vertical_numbers([a,b,c,d,e,f,g,h,i,j,k,l,m,n,o], 5, V1, _N1), vertical_numbers(_N1, 4, V2, _N2), vertical_numbers(_N2, 3, V3, _N3), vertical_numbers(_N3, 2, V4, _N4), vertical_numbers(_N4, 1, V5, N).
-    V1 = [a,b,d,g,k],
-    V2 = [c,e,h,l],
-    V3 = [f,i,m],
-    V4 = [j,n],
-    V5 = [o],
-    N = []
-
-    diagonal_numbers([a,b,c,d,e,f,g,h,i,j,k,l,m,n,o], 5, D1, _N1), diagonal_numbers(_N1, 4, D2, _N2), diagonal_numbers(_N2, 3, D3, _N3), diagonal_numbers(_N3, 2, D4, _N4), diagonal_numbers(_N4, 1, D5, N).
-    D1 = [a,c,f,j,o],
-    D2 = [b,e,i,n],
-    D3 = [d,h,m],
-    D4 = [g,l],
-    D5 = [k],
-    N = []
-*/

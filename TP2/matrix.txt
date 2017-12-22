@@ -1,0 +1,58 @@
+Experimenta carregar o trid.pl, e executar esta query:
+
+horizontal_numbers([a,b,c,d,e,f,g,h,i,j,k,l,m,n,o], 1, H1, _N1), horizontal_numbers(_N1, 2, H2, _N2), horizontal_numbers(_N2, 3, H3, _N3), horizontal_numbers(_N3, 4, H4, _N4), horizontal_numbers(_N4, 5, H5, _).
+
+Esta query simula parte do funcionamento do distinct_horizontal no trid.pl, e o output deve ser algo como:
+
+H1 = [a],
+H2 = [b,c],
+H3 = [d,e,f],
+H4 = [g,h,i,j],
+H5 = [k,l,m,n,o]
+
+Repara que passamos a lista [a,b,c,d,e,f,g,h,i,j,k,l,m,n,o] à query originalmente,
+e as diferentes listas H1, H2, etc, que ela devolveu são as linhas horizontais de uma matrix do tipo:
+
+a
+b c
+d e f
+g h i j
+k l m n o
+
+Agora executa esta query:
+
+vertical_numbers([a,b,c,d,e,f,g,h,i,j,k,l,m,n,o], 5, V1, _N1), vertical_numbers(_N1, 4, V2, _N2), vertical_numbers(_N2, 3, V3, _N3), vertical_numbers(_N3, 2, V4, _N4), vertical_numbers(_N4, 1, V5, _).
+
+Esta query simula parte do funcionamento do distinct_vertical no trid.pl, e o output deve ser algo como:
+
+V1 = [a,b,d,g,k],
+V2 = [c,e,h,l],
+V3 = [f,i,m],
+V4 = [j,n],
+V5 = [o]
+
+Repara que as listas V1, V2, etc, que ela devolveu são as linhas verticais da matriz acima indicada.
+
+Por fim, executa a query:
+
+diagonal_numbers([a,b,c,d,e,f,g,h,i,j,k,l,m,n,o], 5, D1, _N1), diagonal_numbers(_N1, 4, D2, _N2), diagonal_numbers(_N2, 3, D3, _N3), diagonal_numbers(_N3, 2, D4, _N4), diagonal_numbers(_N4, 1, D5, _).
+
+Esta query simula parte do funcionamento do distinct_diagonal no trid.pl, e o output deve ser algo como:
+
+D1 = [a,c,f,j,o],
+D2 = [b,e,i,n],
+D3 = [d,h,m],
+D4 = [g,l],
+D5 = [k],
+
+E mais uma vez, repara que as listas D1, D2, etc, correspondem às linhas diagonais da mesma matriz.
+
+Os predicados distinct_horizontal, distinct_vertical e distinct_diagonal servem para impor a restrição de que todos os digitos em cada linha do trid são diferentes.
+A matriz é simula logicamente a representação do trid, mas tecnicamente, a representação é guardada numa lista simples.
+
+
+    a				a
+   b c		Lógica		b c		Implementação
+  d e f		---->		d e f		---->		 	[a,b,c,d,e,f,g,h,i,j,k,l,m,n,o] + predicados horizontal_numbers, vertical_numbers e diagonal_numbers
+ g h i j			g h i j
+k l m n o			k l m n o

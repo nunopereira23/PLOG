@@ -1,6 +1,7 @@
 :-use_module(library(lists)).
 :-use_module(library(clpfd)).
-
+:-dynamic
+    sum/4.
 /*
 Example usage:
 trid(5, [sum(2, 4, 5, 12), sum(4, 7, 8, 9), sum(6, 9, 10, 6), sum(7, 11, 12, 6), sum(8, 12, 13, 12), sum(9, 13, 14, 8)]).
@@ -256,9 +257,6 @@ cell(V1, V2, V3):-
     (X0v1 =:= X0, Y1v0 =:= Y1;
     X0v1 =:= X1, Y1v0 =:= Y0),
     !.
-
-:-dynamic
-    sum/4.
 
 get_sums([sum(_, _, _, Sum)], Sum):-
     !.
